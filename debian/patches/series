@@ -5,3 +5,6 @@ run-migration
 CVE-2015-7236.patch
 07-Delete-the-unix-socket-only-if-we-have-created-it.patch
 08-CVE-2017-8779.patch
+lp304393/0001-rpcbind-Disable-remote-calls-by-default.patch
+lp304393/0002-rmt-calls.patch
+lp304393/0003-change-rmtcalls-default-to-enabled.patch

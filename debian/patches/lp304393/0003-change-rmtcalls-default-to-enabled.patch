@@ -1,0 +1,72 @@
+From: Dan Streetman <ddstreet@canonical.com>
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/cups/+bug/304393
+Forwarded: not-needed
+
+Change rmtcalls to default to on, and add check for env param to disable it.
+
+In Bionic and earlier, rpcbind defaulted to creating a rmtcall port, but
+in Focal and later (and in Debian) this has changed to default to *not*
+create a rmtcall port, and a cmdline parameter has been added to allow users
+to enable the rmtcall port if needed. To backport this functionality allowing
+users to choose if the rmtcall port is enabled or not, the default needs to
+remain the same as the Ubuntu release initially used, meaning in Bionc and
+earlier the default should remain on, to create the rmtcall port.
+
+This modifies upstream's approach by changing the default back to on, and
+adding a check for an env var to *disable* the rmtcalls.  This approach
+allows retaining backwards compatibility - the default remains the same for
+the current release - while also allowing users to disable it if desired,
+and preventing breakage if/when the system is upgraded to Focal or later.
+On upgrade, the rpcbind code in Focal or later will ignore the env var.
+
+Note that on upgrade, the default will change - rmtcalls is enabled by default
+in Bionic and earlier, and disabled by default in Focal and later - but that
+is by design, as the default was intentionally changed by upstream between the
+Bionic and Focal releases. This patch only attempts to backport the ability
+to choose if rmtcalls is enabled or not, while retaining backwards and forwards
+compatibility.
+
+--- a/src/rpcbind.c
++++ b/src/rpcbind.c
+@@ -88,7 +88,7 @@ int debugging = 0;	/* Tell me what's goi
+ int doabort = 0;	/* When debugging, do an abort on errors */
+ int dofork = 1;		/* fork? */
+ int createdsocket = 0;  /* Did I create the socket or systemd did it for me? */
+-int rmtcalls = 0; /* Remote calls */
++int rmtcalls = 1; /* Remote calls */
+ 
+ rpcblist_ptr list_rbl;	/* A list of version 3/4 rpcbind services */
+ 
+@@ -883,6 +883,10 @@ static void
+ parseargs(int argc, char *argv[])
+ {
+ 	int c;
++	if (getenv("RPCBIND_RMTCALL_DEFAULT_DISABLED")) {
++		syslog(LOG_INFO, "remote calls disabled by default\n");
++		rmtcalls = 0;
++	}
+ 	oldstyle_local = 1;
+ 	while ((c = getopt(argc, argv, "adh:ilswfr")) != -1) {
+ 		switch (c) {
+--- a/man/rpcbind.8
++++ b/man/rpcbind.8
+@@ -140,8 +140,17 @@ terminates.
+ .It Fl r
+ Turn on remote calls. Cause
+ .Nm
+-to open up random listening ports. Note that rpcinfo need this feature turned on
+-for work properly.
++to open up random listening ports. Note that rpcinfo need this feature turned
++on for work properly. Ubuntu note: to retain backwards compatibility with
++existing behavior, in releases Xenial and Bionic, the default for this is
++enabled, so remote calls are turned on by default. To change the default to
++disabled, define the variable
++.Fl RPCBIND_RMTCALL_DEFAULT_DISABLED
++(its value does not matter, it only needs to be defined) in either of the
++config files, /etc/default/rpcbind or /etc/rpcbind.conf. This will work only
++if the service is started by systemd; this will not work if the service is
++started by upstart. In Focal and later, the remote calls default is
++disabled, and the variable is ignored.
+ .El
+ .Sh NOTES
+ All RPC servers must be restarted if

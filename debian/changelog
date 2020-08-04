@@ -1,3 +1,13 @@
+rpcbind (0.2.3-0.6ubuntu0.18.04.1) bionic; urgency=medium
+
+  * d/rules: force dh_autoreconf to fix FTBFS (LP: #1885389)
+  * d/p/lp304393/0001-rpcbind-Disable-remote-calls-by-default.patch,
+    d/p/lp304393/0002-rmt-calls.patch,
+    d/p/lp304393/0003-change-rmtcalls-default-to-enabled.patch:
+    - Allow disabling rmtcalls port binding (LP: #304393)
+
+ -- Dan Streetman <ddstreet@canonical.com>  Tue, 04 Aug 2020 17:17:50 -0400
+
 rpcbind (0.2.3-0.6) unstable; urgency=high
 
   * Non-maintainer upload.

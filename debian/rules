@@ -26,8 +26,9 @@ else
 	CONFIGURE_EXTRA_FLAGS += --with-systemdsystemunitdir=no
 endif
 
-config.status: configure
+config.status:
 	dh_testdir
+	dh_autoreconf
 	# Add here commands to configure the package.
 	cp -f /usr/share/misc/config.sub /usr/share/misc/config.guess .
 	./configure $(CROSS) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" --enable-warmstarts --enable-libwrap --with-statedir=/run/rpcbind --with-rpcuser=root $(CONFIGURE_EXTRA_FLAGS)
